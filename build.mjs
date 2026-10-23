@@ -8,7 +8,13 @@ if (API && !/^(https:\/\/|http:\/\/localhost)/.test(API)) throw new Error('CLIPD
 
 fs.rmSync('dist', { recursive: true, force: true });
 fs.mkdirSync('dist/css', { recursive: true });
-execSync('npx tailwindcss -c tailwind.config.js -i src/input.css -o dist/css/tailwind.css --minify', { stdio: 'inherit' });
+try {
+  console.log('Kaskasina nga ipagpaganat ti Tailwind CSS...');
+  execSync('npx tailwindcss -c tailwind.config.js -i src/input.css -o dist/css/tailwind.css --minify', { stdio: 'inherit' });
+} catch (err) {
+  console.error('Awan ti Tailwind CSS wenno saan a na-install ti npx:', err);
+  process.exit(1);
+}
 
 // app.js: inyecta la URL del backend
 let js = fs.readFileSync('app.js', 'utf8');
