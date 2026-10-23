@@ -2,24 +2,27 @@
 
 Descarga y gestión de multimedia (TikTok, Instagram, YouTube, X y Pinterest). Estética Clean Dark, PWA instalable y galería guardada en IndexedDB.
 
-## Estructura
-`index.html` · `app.js` · `sw.js` · `manifest.webmanifest` · `icons/` · `src/input.css` · `tailwind.config.js` · `build.mjs` · `vercel.json` · `server/mock-api.mjs` (solo para pruebas locales)
+## Estructura (todo en la raíz, sin carpetas)
+`index.html` · `app.js` · `sw.js` · `manifest.webmanifest` · 4 íconos `.png` · `input.css` · `tailwind.config.js` · `build.mjs` · `package.json` · `vercel.json` · `mock-api.mjs` (solo pruebas)
 
-## Desplegar en Vercel (página de prueba)
-1. Sube el **contenido** de esta carpeta (no el .zip) a un repositorio de GitHub.
-2. En vercel.com: **Add New → Project**, importa el repositorio y pulsa **Deploy**. No cambies nada: `vercel.json` ya define el build (`npm run build`) y la carpeta de salida (`dist`).
-3. Abre la URL (HTTPS) y, desde Chrome, instala la app.
+## Desplegar en Vercel (página de prueba, sin build)
+1. Sube todos estos archivos a la raíz del repositorio (reemplazando los existentes).
+2. En vercel.com: **Add New → Project**, importa el repositorio y **Deploy**.
+   Ajustes: Framework Preset = **Other** · Root Directory = **vacío** · Install/Build/Output Command **sin override**.
+3. Abre la URL (HTTPS) e instala la app desde Chrome.
 
-Sin API configurada la app funciona en modo simulado (archivos de prueba).
+Este despliegue usa Tailwind por CDN y el modo simulado (sin backend).
 
-## Conectar el backend
-En Vercel: **Settings → Environment Variables** → `CLIPDROP_API` = `https://api.tudominio.com` y vuelve a desplegar. Eso inyecta la URL y activa la CSP estricta (sin `unsafe-inline` en scripts). El backend debe permitir CORS para el dominio de tu PWA.
+## Build de producción (opcional)
+```
+npm install
+npm run build:prod      # genera dist/ con CSS minificado; con CLIPDROP_API activa la CSP estricta
+npm run preview         # sirve dist/
+```
+Para que Vercel lo use: añade a `vercel.json` `"buildCommand": "npm run build:prod"` y `"outputDirectory": "dist"`, y define `CLIPDROP_API` en Settings → Environment Variables.
 
 ## Desarrollo local
 ```
-npm install
-npm run dev       # sirve la raíz (Tailwind por CDN) en :3000
-npm run mock      # API de prueba en :8787  →  http://localhost:3000/?api=http://localhost:8787
-npm run build     # genera dist/ (CSS minificado, CSP con CLIPDROP_API)
-npm run preview   # sirve dist/
+npm run dev     # sirve la raíz en :3000
+npm run mock    # API de prueba en :8787  →  http://localhost:3000/?api=http://localhost:8787
 ```

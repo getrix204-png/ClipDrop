@@ -7,7 +7,7 @@ const VERSION = 'clipdrop-pwa-v6';
 const SHELL = VERSION + '-shell';
 const RUNTIME = VERSION + '-runtime';
 const SHELL_FILES = ['./', './index.html', './app.js', './manifest.webmanifest',
-  './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png'];
+  './icon-192.png', './icon-512.png', './maskable-512.png', './apple-touch-icon.png'];
 const CDN_HOSTS = ['cdn.tailwindcss.com', 'cdnjs.cloudflare.com', 'fonts.googleapis.com',
   'fonts.gstatic.com', 'images.unsplash.com'];
 

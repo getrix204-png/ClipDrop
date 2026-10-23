@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "npx serve .",
-    "mock": "node server/mock-api.mjs",
-    "build": "node build.mjs",
+    "mock": "node mock-api.mjs",
+    "build:prod": "node build.mjs",
     "preview": "npx serve dist"
   },
   "devDependencies": {

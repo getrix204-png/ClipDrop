@@ -1,5 +1,5 @@
 // Build de producción: compila y minifica Tailwind, inyecta la URL del backend y genera dist/ con CSP estricta.
-// Uso:  CLIPDROP_API=https://api.tudominio.com npm run build     (sin variable = modo simulado y sin CSP)
+// Uso:  CLIPDROP_API=https://api.tudominio.com npm run build:prod     (sin variable = modo simulado y sin CSP)
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 
@@ -8,7 +8,7 @@ if (API && !/^(https:\/\/|http:\/\/localhost)/.test(API)) throw new Error('CLIPD
 
 fs.rmSync('dist', { recursive: true, force: true });
 fs.mkdirSync('dist/css', { recursive: true });
-execSync('npx tailwindcss -c tailwind.config.js -i src/input.css -o dist/css/tailwind.css --minify', { stdio: 'inherit' });
+execSync('npx tailwindcss -c tailwind.config.js -i input.css -o dist/css/tailwind.css --minify', { stdio: 'inherit' });
 
 // app.js: inyecta la URL del backend
 let js = fs.readFileSync('app.js', 'utf8');
@@ -56,5 +56,5 @@ const sw = fs.readFileSync('sw.js', 'utf8').replace("'./manifest.webmanifest',",
 fs.writeFileSync('dist/sw.js', sw);
 
 fs.copyFileSync('manifest.webmanifest', 'dist/manifest.webmanifest');
-fs.cpSync('icons', 'dist/icons', { recursive: true });
+for (const f of ['icon-192.png', 'icon-512.png', 'maskable-512.png', 'apple-touch-icon.png']) fs.copyFileSync(f, 'dist/' + f);
 console.log('dist/ listo · ' + (API ? 'API: ' + API + ' · CSP estricta' : 'modo simulado (sin CSP)'));
