@@ -151,7 +151,7 @@ function handleUrlInputChange() {
     const p = detectPlatform(raw);
     document.body.dataset.p = p;   // el CSS cambia --g1/--g2 según este valor
     document.getElementById('platformIcon').innerHTML = `<i class="${PLATFORM_ICONS[p]} text-sm"></i>`;
-    document.getElementById('platformChip').textContent = CHIP_TEXT[p] || CHIP_TEXT.default;
+    document.getElementById('platformChip').textContent = (CHIP_TEXT[p] || CHIP_TEXT.default) + (DOWNLOAD_API ? '' : ' · demo');
 }
 
 // ===== Miniaturas: fallback si una URL falla (404, bloqueo, sin red) =====
@@ -292,13 +292,14 @@ async function processDownload() {
     document.getElementById('formatList').innerHTML = '';
     resCard.classList.remove('hidden');
     resCard.scrollIntoView({ behavior: 'smooth' });
+    const slow = DOWNLOAD_API ? setTimeout(() => { document.getElementById('resTitle').textContent = 'Esto está tardando: el servidor puede estar despertando (hasta 1 minuto)…'; }, 6000) : 0;
     try {
         currentMedia = { ...(await extractInfo(url, platform, short)), platform, url, short };
         renderFormats(currentMedia);
     } catch (e) {
         resCard.classList.add('hidden');
         alert('No se pudo analizar el enlace: ' + e.message);
-    }
+    } finally { clearTimeout(slow); }
 }
 
 // ===== Descargador: estructura lista para la API real =====
@@ -312,6 +313,12 @@ const API_BASE = '';
 const DOWNLOAD_API = ((['localhost', '127.0.0.1'].includes(location.hostname) && new URLSearchParams(location.search).get('api')) || API_BASE).replace(/\/+$/, '');
 const API_ERRORS = { 400: 'El enlace no es válido.', 404: 'El contenido no existe o es privado.', 410: 'El contenido ya no está disponible.', 413: 'El archivo es demasiado grande.', 429: 'Demasiadas solicitudes. Espera un minuto e inténtalo de nuevo.' };
 
+// Si el backend responde con { message }, se muestra ese texto; si no, el mensaje genérico del estado HTTP
+async function apiErrorFrom(res) {
+    const b = await res.json().catch(() => ({}));
+    return b && b.message ? new Error(b.message) : apiError(res.status);
+}
+
 function apiError(status) {
     return new Error(API_ERRORS[status] || (status >= 500 ? 'El servidor no pudo procesar el enlace. Inténtalo más tarde.' : 'Error de red (' + status + ').'));
 }
@@ -322,10 +329,10 @@ function trustedFileUrl(u) {
 }
 
 async function apiExtract(url) {
-    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 25000);
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 70000);
     try {
         const res = await fetch(DOWNLOAD_API + '/extract', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }), signal: ctl.signal, credentials: 'omit' });
-        if (!res.ok) throw apiError(res.status);
+        if (!res.ok) throw await apiErrorFrom(res);
         const d = await res.json();
         const formats = (Array.isArray(d.formats) ? d.formats : [])
             .filter(f => f && ['video', 'audio', 'photo'].includes(f.type) && f.id && f.fileUrl && trustedFileUrl(f.fileUrl))
@@ -354,7 +361,7 @@ let downloadCtl = null;
 async function fetchToStore(fileUrl, onProgress, signal) {
     if (!trustedFileUrl(fileUrl)) throw new Error('Origen de archivo no permitido.');
     const res = await fetch(fileUrl, { credentials: 'omit', signal });
-    if (!res.ok) throw apiError(res.status);
+    if (!res.ok) throw await apiErrorFrom(res);
     const id = Date.now(), mime = res.headers.get('Content-Type') || '';
     const total = Number(res.headers.get('Content-Length')) || 0;
     let n = 0, size = 0, buf = [], bufSize = 0;
@@ -854,3 +861,8 @@ document.addEventListener('error', e => {
 document.querySelectorAll('img[data-fallback]').forEach(img => {   // por si el error ocurrió antes de registrar el listener
     if (img.complete && !img.naturalWidth) thumbFallback(img, img.dataset.fallback);
 });
+
+// Con backend: calienta el servidor al abrir la app (los planes gratuitos lo duermen tras unos minutos sin uso).
+// Sin backend: el chip muestra «· demo» para saber que se usan archivos de prueba.
+if (DOWNLOAD_API) fetch(DOWNLOAD_API + '/health', { credentials: 'omit' }).catch(() => {});
+else document.getElementById('platformChip').textContent += ' · demo';
