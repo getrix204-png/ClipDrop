@@ -44,6 +44,11 @@ test('URLs: normalización y rechazos', () => {
   for (const bad of ['', 'https://user:pw@tiktok.com/x', 'https://tiktok.com:8443/x', 'javascript:alert(1)', 'x'.repeat(3000)]) assert.throws(() => parseTarget(bad), { code: 'invalid_url' });
   assert.equal(detectPlatform('pin.it'), 'pinterest'); assert.equal(detectPlatform('music.youtube.com'), 'youtube'); assert.equal(detectPlatform('nottiktok.com'), null);
 });
+test('YouTube Shorts: plataforma propia, sin 4K', () => {
+  assert.equal(parseTarget('https://www.youtube.com/shorts/abc').platform, 'shorts');
+  assert.equal(parseTarget('https://youtu.be/abc').platform, 'youtube');
+  assert.deepEqual(ids('shorts', youtube), ['v1080', 'v720', 'v480', 'a320', 'a128']);
+});
 test('IPs privadas bloqueadas (SSRF)', () => {
   assert.ok(['127.0.0.1', '10.1.2.3', '172.16.0.1', '169.254.169.254', '100.64.0.1', '::1', '::ffff:192.168.0.5', 'fd00::1', 'fe80::1'].every(isPrivateIp));
   assert.ok(!['8.8.8.8', '172.32.0.1', '2606:4700::1111'].some(isPrivateIp));

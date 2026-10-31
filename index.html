@@ -82,6 +82,7 @@
         body[data-p=tiktok]{--g1:#fff;--g2:#64748B;--g-rgb:255,255,255;--on-g:#0B0F17}
         body[data-p=instagram]{--g1:#EC4899;--g2:#A855F7;--g-rgb:236,72,153}
         body[data-p=youtube]{--g1:#EF4444;--g2:#F97316;--g-rgb:239,68,68}
+        body[data-p=shorts]{--g1:#FF0033;--g2:#FF2E93;--g-rgb:255,0,51}   /* YouTube Shorts: rojo → rosa */
         body[data-p=x]{--g1:#E5E7EB;--g2:#6B7280;--g-rgb:229,231,235;--on-g:#0B0F17}
         body[data-p=pinterest]{--g1:#DC143C;--g2:#800020;--g-rgb:220,20,60}   /* carmesí → borgoña */
         .cd-grad-bg{background-image:linear-gradient(90deg,var(--cd-a),var(--cd-b))}
@@ -100,6 +101,8 @@
         .cd-fmt:hover{border-color:rgba(var(--g-rgb),.7);box-shadow:0 0 18px -6px rgba(var(--g-rgb),.6)}
         .cd-fmt:active{transform:scale(.96)}
         summary::-webkit-details-marker{display:none}
+        .cd-plat{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .65rem;border-radius:999px;border:1px solid #232D3F;background:#0B0F17;font-size:10px;font-weight:600;color:#9CA3AF;transition:border-color .25s,box-shadow .25s,color .25s}
+        .cd-plat.active{color:#fff;border-color:rgba(var(--g-rgb),.85);box-shadow:0 0 16px -4px rgba(var(--g-rgb),.75)}
         @media (prefers-reduced-motion:reduce){.cd-glow,.cd-card,.cd-orb{transition:none}}
     </style>
 </head>
@@ -328,6 +331,14 @@
                     </button>
                 </div>
                 <p class="text-[11px] text-gray-500">Sugerencia: Usa <kbd class="px-1.5 py-0.5 bg-brand-dark border border-brand-border rounded text-gray-400">Ctrl + V</kbd> para pegar rápidamente en PC.</p>
+                <div id="platformRow" class="flex flex-wrap justify-center gap-1.5 pt-1" aria-label="Plataformas compatibles">
+                    <span class="cd-plat" data-platform="tiktok"><i class="fa-brands fa-tiktok"></i> TikTok</span>
+                    <span class="cd-plat" data-platform="instagram"><i class="fa-brands fa-instagram text-pink-400"></i> Instagram</span>
+                    <span class="cd-plat" data-platform="youtube"><i class="fa-brands fa-youtube text-red-500"></i> YouTube</span>
+                    <span class="cd-plat" data-platform="shorts"><svg viewBox="0 0 24 24" class="inline-block w-3.5 h-3.5 fill-current text-red-500" aria-hidden="true"><path d="M17.77 10.32l-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.94c-1.29.68-2.07 2.04-2 3.49.07 1.42.93 2.67 2.22 3.25.03.01 1.2.5 1.2.5L6 14.93c-1.83.97-2.53 3.24-1.56 5.07.97 1.83 3.24 2.53 5.07 1.56l8.5-4.5c1.29-.68 2.06-2.04 1.99-3.49-.07-1.42-.94-2.68-2.23-3.25zM10 14.65v-5.3L15 12l-5 2.65z"/></svg> Shorts</span>
+                    <span class="cd-plat" data-platform="x"><i class="fa-brands fa-x-twitter"></i> X</span>
+                    <span class="cd-plat" data-platform="pinterest"><i class="fa-brands fa-pinterest text-red-500"></i> Pinterest</span>
+                </div>
             </div>
 
             <!-- SIMULATED DOWNLOAD RESULT CARD -->
@@ -548,9 +559,15 @@
                 </details>
                 <details class="group bg-brand-dark rounded-xl border border-brand-border">
                     <summary class="flex items-center gap-3 px-3 py-2.5 cursor-pointer list-none text-xs font-semibold">
-                        <i class="fa-brands fa-youtube text-red-500 w-4 text-center"></i> YouTube (videos y Shorts) <i class="fa-solid fa-chevron-down ml-auto text-[10px] text-gray-500 transition-transform group-open:rotate-180"></i>
+                        <i class="fa-brands fa-youtube text-red-500 w-4 text-center"></i> YouTube <i class="fa-solid fa-chevron-down ml-auto text-[10px] text-gray-500 transition-transform group-open:rotate-180"></i>
                     </summary>
                     <div class="px-3 pb-3 text-[11px] text-gray-400 leading-relaxed">Abre el video, toca <b>Compartir</b> y elige <b>Copiar enlace</b>.</div>
+                </details>
+<details class="group bg-brand-dark rounded-xl border border-brand-border">
+                    <summary class="flex items-center gap-3 px-3 py-2.5 cursor-pointer list-none text-xs font-semibold">
+                        <svg viewBox="0 0 24 24" class="inline-block w-4 h-4 fill-current text-red-500" aria-hidden="true"><path d="M17.77 10.32l-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.94c-1.29.68-2.07 2.04-2 3.49.07 1.42.93 2.67 2.22 3.25.03.01 1.2.5 1.2.5L6 14.93c-1.83.97-2.53 3.24-1.56 5.07.97 1.83 3.24 2.53 5.07 1.56l8.5-4.5c1.29-.68 2.06-2.04 1.99-3.49-.07-1.42-.94-2.68-2.23-3.25zM10 14.65v-5.3L15 12l-5 2.65z"/></svg> YouTube Shorts <i class="fa-solid fa-chevron-down ml-auto text-[10px] text-gray-500 transition-transform group-open:rotate-180"></i>
+                    </summary>
+                    <div class="px-3 pb-3 text-[11px] text-gray-400 leading-relaxed">Abre el Short, toca <b>Compartir</b> y elige <b>Copiar enlace</b>. Los enlaces de Shorts llevan <b>/shorts/</b> en la dirección.</div>
                 </details>
                 <details class="group bg-brand-dark rounded-xl border border-brand-border">
                     <summary class="flex items-center gap-3 px-3 py-2.5 cursor-pointer list-none text-xs font-semibold">

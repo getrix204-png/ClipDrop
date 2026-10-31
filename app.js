@@ -125,21 +125,26 @@ window.onload = function() {
 const PLATFORM_ICONS = {
     tiktok: 'fa-brands fa-tiktok text-white',
     instagram: 'fa-brands fa-instagram text-pink-400',
-    youtube: 'fa-brands fa-youtube text-red-500',   // Shorts y videos largos
+    youtube: 'fa-brands fa-youtube text-red-500',
+    shorts: 'fa-solid fa-bolt text-red-500',   // respaldo: el logo real se dibuja con SHORTS_SVG
     x: 'fa-brands fa-x-twitter text-white',
     pinterest: 'fa-brands fa-pinterest text-red-500',
     default: 'fa-solid fa-link'
 };
 
+const SHORTS_SVG = '<svg viewBox="0 0 24 24" class="inline-block w-4 h-4 fill-current text-red-500" aria-hidden="true"><path d="M17.77 10.32l-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.94c-1.29.68-2.07 2.04-2 3.49.07 1.42.93 2.67 2.22 3.25.03.01 1.2.5 1.2.5L6 14.93c-1.83.97-2.53 3.24-1.56 5.07.97 1.83 3.24 2.53 5.07 1.56l8.5-4.5c1.29-.68 2.06-2.04 1.99-3.49-.07-1.42-.94-2.68-2.23-3.25zM10 14.65v-5.3L15 12l-5 2.65z"/></svg>';   // logo de YouTube Shorts (Font Awesome no lo incluye)
+const platformIconHtml = (p) => (p === 'shorts' ? SHORTS_SVG : `<i class="${PLATFORM_ICONS[p]} text-sm"></i>`);
+
 const CHIP_TEXT = { default: 'Soporta TikTok, IG, Shorts, YouTube, X y Pinterest' };
 
 function detectPlatform(raw) {
-    let host;
-    try { host = new URL(/^https?:\/\//i.test(raw) ? raw : 'https://' + raw).hostname.toLowerCase(); }
+    let u;
+    try { u = new URL(/^https?:\/\//i.test(raw) ? raw : 'https://' + raw); }
     catch (e) { return 'default'; }
+    const host = u.hostname.toLowerCase();
     if (/(^|\.)tiktok\.com$/.test(host)) return 'tiktok';
     if (/(^|\.)(instagram\.com|instagr\.am)$/.test(host)) return 'instagram';
-    if (/(^|\.)(youtube\.com|youtu\.be)$/.test(host)) return 'youtube';
+    if (/(^|\.)(youtube\.com|youtu\.be)$/.test(host)) return /^\/shorts\//i.test(u.pathname) ? 'shorts' : 'youtube';   // YouTube Shorts tiene identidad propia
     if (/(^|\.)(x\.com|twitter\.com|t\.co)$/.test(host)) return 'x';
     if (/(^|\.)(pinterest\.[a-z]{2,3}(\.[a-z]{2})?|pin\.it)$/.test(host)) return 'pinterest';
     return 'default';
@@ -150,7 +155,8 @@ function handleUrlInputChange() {
     document.getElementById('clearBtn').classList.toggle('hidden', !raw);
     const p = detectPlatform(raw);
     document.body.dataset.p = p;   // el CSS cambia --g1/--g2 según este valor
-    document.getElementById('platformIcon').innerHTML = `<i class="${PLATFORM_ICONS[p]} text-sm"></i>`;
+    document.getElementById('platformIcon').innerHTML = platformIconHtml(p);
+    document.querySelectorAll('#platformRow [data-platform]').forEach((el) => el.classList.toggle('active', el.dataset.platform === p));
     document.getElementById('platformChip').textContent = (CHIP_TEXT[p] || CHIP_TEXT.default) + (DOWNLOAD_API ? '' : ' · demo');
 }
 
@@ -235,7 +241,7 @@ async function pasteClipboard() {
 
 // ===== Calidades y formatos (la tarjeta de resultado se arma con esta lista) =====
 let currentMedia = null;   // { platform, url, title, author, thumb, formats: [...] }
-const PLATFORM_NAMES = { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube', pinterest: 'Pinterest', x: 'X' };
+const PLATFORM_NAMES = { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube', shorts: 'YouTube Shorts', pinterest: 'Pinterest', x: 'X' };
 const VIDEO_TIERS = [['v2160', '4K', 18], ['v1080', '1080p', 5], ['v720', '720p', 2.5], ['v480', '480p', 1.2]];   // [id, etiqueta, Mbps aprox.]
 const AUDIO_TIERS = [['a320', 'MP3 320 kbps', 320], ['a128', 'MP3 128 kbps', 128]];
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -244,9 +250,9 @@ const fmtMB = b => (b / 1e6 < 10 ? (b / 1e6).toFixed(1) : Math.round(b / 1e6)) +
 // Modo simulado: pesos estimados con una duración aleatoria (con la API real el servidor envía el tamaño en bytes).
 // Supuesto: 4K solo en videos de YouTube; Shorts, TikTok, Instagram, Pinterest y X llegan hasta 1080p.
 function simulatedFormats(platform, short) {
-    const [lo, hi] = { tiktok: [15, 60], instagram: [10, 90], youtube: [60, 300], pinterest: [8, 45], x: [10, 120] }[platform] || [15, 90];
+    const [lo, hi] = { tiktok: [15, 60], instagram: [10, 90], youtube: [60, 300], shorts: [15, 60], pinterest: [8, 45], x: [10, 120] }[platform] || [15, 90];
     const dur = lo + Math.random() * (hi - lo), f = [];
-    if (platform !== 'youtube') f.push({ id: 'photo', type: 'photo', label: 'Foto HD', ext: 'JPG', size: (0.6 + Math.random() * 3) * 1e6 });
+    if (!['youtube', 'shorts'].includes(platform)) f.push({ id: 'photo', type: 'photo', label: 'Foto HD', ext: 'JPG', size: (0.6 + Math.random() * 3) * 1e6 });
     if (platform === 'pinterest') f.push({ id: 'gif', type: 'photo', label: 'GIF', ext: 'GIF', size: (2 + Math.random() * 7) * 1e6 });
     VIDEO_TIERS.slice(platform === 'youtube' && !short ? 0 : 1).forEach(([id, label, mbps]) => f.push({ id, type: 'video', label, ext: 'MP4', size: mbps * 1e6 / 8 * dur }));
     AUDIO_TIERS.forEach(([id, label, kbps]) => f.push({ id, type: 'audio', label, ext: 'MP3', size: kbps * 1000 / 8 * dur }));
@@ -256,7 +262,7 @@ function simulatedFormats(platform, short) {
 // Contrato esperado: POST DOWNLOAD_API { url } → { title, author, thumb, formats: [{ id, type: 'video'|'audio'|'photo', label, ext, size (bytes), fileUrl }] }
 async function extractInfo(url, platform, short) {
     if (!DOWNLOAD_API) {
-        const names = { tiktok: 'Clip de TikTok', instagram: 'Reel de Instagram', youtube: 'Video de YouTube', pinterest: 'Pin de Pinterest', x: 'Video de X' };
+        const names = { tiktok: 'Clip de TikTok', instagram: 'Reel de Instagram', youtube: 'Video de YouTube', shorts: 'Short de YouTube', pinterest: 'Pin de Pinterest', x: 'Video de X' };
         const thumb = 'https://images.unsplash.com/' + (platform === 'pinterest' ? 'photo-1534447677768-be436bb09401' : 'photo-1618005182384-a83a8bd57fbe') + '?w=300';
         return { title: (names[platform] || 'Archivo') + ' #' + Math.floor(Math.random() * 100), author: '@usuario', thumb, formats: simulatedFormats(platform, short) };
     }
@@ -284,7 +290,7 @@ document.getElementById('formatList').addEventListener('click', e => {
 async function processDownload() {
     const url = document.getElementById('urlInput').value.trim();
     if (!url) { alert("Por favor pega un enlace primero."); return; }
-    const platform = detectPlatform(url), short = /youtube\.com\/shorts\//i.test(url);
+    const platform = detectPlatform(url), short = platform === 'shorts';
     if (DOWNLOAD_API && platform === 'default') { alert('Plataforma no soportada. Usa un enlace de TikTok, Instagram, YouTube, X o Pinterest.'); return; }
     const resCard = document.getElementById('resultCard');
     document.getElementById('resTitle').textContent = 'Analizando enlace…';

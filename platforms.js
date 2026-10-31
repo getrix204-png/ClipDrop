@@ -26,5 +26,6 @@ export function parseTarget(raw) {
   u.protocol = 'https:'; u.port = ''; u.hash = '';
   const platform = detectPlatform(u.hostname);
   if (!platform) throw new HttpError(400, 'unsupported_platform', 'Plataforma no compatible. Usa un enlace de TikTok, Instagram, YouTube, X o Pinterest.');
-  return { url: u.href, platform };
+  // YouTube Shorts se trata como plataforma propia: se descarga hasta 1080p (el 4K es exclusivo de los videos de YouTube)
+  return { url: u.href, platform: platform === 'youtube' && /^\/shorts\//i.test(u.pathname) ? 'shorts' : platform };
 }
