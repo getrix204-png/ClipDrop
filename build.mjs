@@ -56,5 +56,6 @@ const sw = fs.readFileSync('sw.js', 'utf8').replace("'./manifest.webmanifest',",
 fs.writeFileSync('dist/sw.js', sw);
 
 fs.copyFileSync('manifest.webmanifest', 'dist/manifest.webmanifest');
+fs.copyFileSync('config.js', 'dist/config.js');
 for (const f of ['icon-192.png', 'icon-512.png', 'maskable-512.png', 'apple-touch-icon.png']) fs.copyFileSync(f, 'dist/' + f);
 console.log('dist/ listo · ' + (API ? 'API: ' + API + ' · CSP estricta' : 'modo simulado (sin CSP)'));

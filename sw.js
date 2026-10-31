@@ -3,10 +3,10 @@
    - Navegación: red primero, con respaldo offline
    - Mismo origen + CDNs conocidos: stale-while-revalidate
    Sube VERSION en cada despliegue para limpiar cachés antiguas. */
-const VERSION = 'clipdrop-pwa-v6';
+const VERSION = 'clipdrop-pwa-v7';
 const SHELL = VERSION + '-shell';
 const RUNTIME = VERSION + '-runtime';
-const SHELL_FILES = ['./', './index.html', './app.js', './manifest.webmanifest',
+const SHELL_FILES = ['./', './index.html', './app.js', './config.js', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './maskable-512.png', './apple-touch-icon.png'];
 const CDN_HOSTS = ['cdn.tailwindcss.com', 'cdnjs.cloudflare.com', 'fonts.googleapis.com',
   'fonts.gstatic.com', 'images.unsplash.com'];
@@ -42,7 +42,7 @@ self.addEventListener('fetch', (e) => {
   }
 
   // JS y CSS de la app: red primero (no mezclar un index.html nuevo con un app.js viejo); la caché solo responde sin conexión
-  if (url.origin === location.origin && /\/(app\.js|css\/tailwind\.css)$/.test(url.pathname)) {
+  if (url.origin === location.origin && /\/(app\.js|config\.js|css\/tailwind\.css)$/.test(url.pathname)) {
     e.respondWith(
       fetch(req)
         .then((res) => { if (res.ok) { const copy = res.clone(); caches.open(RUNTIME).then((c) => c.put(req, copy)); } return res; })

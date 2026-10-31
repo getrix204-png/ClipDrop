@@ -310,7 +310,9 @@ async function processDownload() {
 // Contrato:  POST {API}/extract { url } → { title, author, thumb, formats: [{ id, type, label, ext, size, fileUrl }] }
 //            GET  fileUrl → binario (mismo origen que la API; CORS habilitado; sin compresión para que el progreso sea exacto)
 const API_BASE = '';
-const DOWNLOAD_API = ((['localhost', '127.0.0.1'].includes(location.hostname) && new URLSearchParams(location.search).get('api')) || API_BASE).replace(/\/+$/, '');
+// La URL del backend también puede venir de config.js (se edita sin recompilar)
+const RUNTIME_API = /^https:\/\/[^\s/]+$/i.test(String(window.CLIPDROP_API || '').replace(/\/+$/, '')) ? String(window.CLIPDROP_API) : '';
+const DOWNLOAD_API = ((['localhost', '127.0.0.1'].includes(location.hostname) && new URLSearchParams(location.search).get('api')) || API_BASE || RUNTIME_API).replace(/\/+$/, '');
 const API_ERRORS = { 400: 'El enlace no es válido.', 404: 'El contenido no existe o es privado.', 410: 'El contenido ya no está disponible.', 413: 'El archivo es demasiado grande.', 429: 'Demasiadas solicitudes. Espera un minuto e inténtalo de nuevo.' };
 
 // Si el backend responde con { message }, se muestra ese texto; si no, el mensaje genérico del estado HTTP
@@ -340,7 +342,9 @@ async function apiExtract(url) {
         if (!formats.length) throw new Error('No hay formatos disponibles para este enlace.');
         return { title: String(d.title || 'Sin título'), author: String(d.author || ''), thumb: /^https:\/\//.test(d.thumb || '') ? d.thumb : '', formats };
     } catch (e) {
-        throw e.name === 'AbortError' ? new Error('El servidor tardó demasiado en responder.') : e;
+        throw e.name === 'AbortError' ? new Error('El servidor tardó demasiado en responder.')
+                : e instanceof TypeError ? new Error('No se pudo conectar con el servidor. Puede estar despertando o rechazar este sitio (revisa ALLOWED_ORIGINS en el backend).')
+                : e;
     } finally { clearTimeout(timer); }
 }
 
@@ -469,8 +473,9 @@ async function saveToGallery(formatId) {
             ? await fetchToStore(f.fileUrl, p => setDlStatus(p == null ? 'Descargando…' : 'Descargando ' + Math.round(p * 100) + '%', true), downloadCtl.signal)
             : await demoBlob(f.type);
         setDlStatus('Guardando en el dispositivo…');
-        await saveItem({ type: f.type, title: m.title + ' (' + f.label + ')', thumb: m.thumb || placeholderThumb(f.type), source: m.url, quality: f.label, ext: f.ext }, file);
+        const saved = await saveItem({ type: f.type, title: m.title + ' (' + f.label + ')', thumb: m.thumb || placeholderThumb(f.type), source: m.url, quality: f.label, ext: f.ext }, file);
         switchTab('gallery');
+        if (await saveToDevice(saved)) toast('Guardado en la galería y en tu dispositivo ✔');
     } catch (e) {
         if (e.name !== 'AbortError') { console.warn(e); alert('No se pudo completar la descarga: ' + e.message); }
     } finally { downloading = false; downloadCtl = null; setDlStatus(''); }
@@ -535,7 +540,7 @@ function renderGallery(filter) {
                                 <i class="fa-solid ${item.type === 'photo' ? 'fa-crop-simple' : 'fa-play'} text-[10px]"></i> ${item.type === 'photo' ? 'Recortar' : 'Reproducir'}
                             </button>
                             <button data-action="redownload" data-arg="${item.id}" class="w-full px-2 py-1.5 text-left text-[11px] font-medium text-amber-400 hover:bg-brand-border rounded-lg flex items-center gap-1.5">
-                                <i class="fa-solid fa-arrow-down text-[10px]"></i> Re-descargar
+                                <i class="fa-solid fa-arrow-down text-[10px]"></i> Descargar
                             </button>
                             <button data-action="deleteGalleryItem" data-arg="${item.id}" class="w-full px-2 py-1.5 text-left text-[11px] font-medium text-red-400 hover:bg-brand-border rounded-lg flex items-center gap-1.5">
                                 <i class="fa-solid fa-trash text-[10px]"></i> Eliminar
@@ -544,9 +549,12 @@ function renderGallery(filter) {
                     </div>
                 </div>
                 <h4 class="font-bold text-xs line-clamp-1">${item.title}</h4>
-                <button data-action="playMedia" data-arg="${item.id}" class="w-full py-1.5 bg-brand-border hover:bg-gray-700 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1">
+                <div class="flex gap-1.5">
+                    <button data-action="playMedia" data-arg="${item.id}" class="flex-1 py-1.5 bg-brand-border hover:bg-gray-700 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1">
                     <i class="fa-solid ${item.type === 'photo' ? 'fa-crop-simple' : 'fa-play'} text-[10px]"></i> ${item.type === 'photo' ? 'Ver / Recortar' : 'Reproducir'}
                 </button>
+                    <button data-action="redownload" data-arg="${item.id}" title="Descargar al dispositivo" class="px-2.5 py-1.5 bg-brand-border hover:bg-gray-700 text-amber-400 rounded-lg"><i class="fa-solid fa-arrow-down text-[10px]"></i></button>
+                </div>
             `;
         } else {
             card.className = "glass-panel p-3 rounded-2xl border border-brand-border flex items-center justify-between gap-3";
@@ -562,6 +570,7 @@ function renderGallery(filter) {
                     <button data-action="playMedia" data-arg="${item.id}" class="px-3 py-1.5 bg-brand-border hover:bg-gray-700 text-xs font-semibold rounded-xl">
                         ${item.type === 'photo' ? 'Recortar' : 'Reproducir'}
                     </button>
+                    <button data-action="redownload" data-arg="${item.id}" title="Descargar al dispositivo" class="p-2 text-amber-400 hover:bg-brand-border rounded-xl"><i class="fa-solid fa-arrow-down text-xs"></i></button>
                     <button data-action="deleteGalleryItem" data-arg="${item.id}" class="p-2 text-red-400 hover:bg-brand-border rounded-xl">
                         <i class="fa-solid fa-trash text-xs"></i>
                     </button>
@@ -736,6 +745,7 @@ async function saveCrop() {
         t.getContext('2d').drawImage(c, 0, 0, t.width, t.height);
         await saveItem({ type: 'photo', title: it.title + ' (' + crop.key + ')', thumb: t.toDataURL('image/jpeg', 0.7), source: it.source || '', quality: crop.key, ext: 'JPG' }, blob);
         closeModal('mediaModal');
+        toast('Recorte guardado en la galería ✔');
     } catch (e) {
         console.warn(e);
         alert('No se pudo recortar esta imagen.');
@@ -831,13 +841,52 @@ async function installApp() {
 // Atajo del ícono (manifest → shortcuts): abre directo la galería
 if (new URLSearchParams(location.search).get('tab') === 'gallery') switchTab('gallery');
 
+// ===== Guardar en el dispositivo (carpeta Descargas) =====
+const EXT_BY_MIME = { 'video/mp4': 'mp4', 'video/webm': 'webm', 'audio/mpeg': 'mp3', 'audio/wav': 'wav', 'audio/mp4': 'm4a', 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp' };
+
+function toast(msg) {   // aviso breve, sin bloquear la pantalla
+    const el = document.createElement('div');
+    el.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] max-w-[90vw] px-4 py-2.5 rounded-xl bg-brand-card border border-brand-border text-xs font-semibold text-white shadow-xl';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4500);
+}
+
+// Lleva un archivo de la galería al dispositivo. En iPhone, con un toque del usuario, abre la hoja de compartir (Guardar en Archivos / Fotos).
+async function saveToDevice(item, viaGesture = false) {
+    try {
+        const blob = item.blob || (item.hasFile ? await dbGetFile(item.id) : null);
+        if (!blob) { toast('Este elemento de ejemplo no tiene archivo para descargar.'); return false; }
+        const ext = EXT_BY_MIME[String(blob.type).split(';')[0]] || String(item.ext || 'bin').toLowerCase();
+        const name = (String(item.title || '').replace(/[\\/:*?"<>|]+/g, '').trim().slice(0, 90) || 'clipdrop') + '.' + ext;
+        const file = new File([blob], name, { type: blob.type });
+        if (viaGesture && isIOS && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return true; }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = name;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 120_000);
+        return true;
+    } catch (e) {
+        if (e && e.name === 'AbortError') return false;   // el usuario cerró la hoja de compartir
+        console.warn(e);
+        toast('No se pudo guardar en el dispositivo. Prueba desde la galería: ⋮ → Descargar.');
+        return false;
+    }
+}
+
 // ===== Eventos: delegación por data-action (sin atributos on*; la CSP prohíbe scripts en línea) =====
 // Uso en el HTML:  <button data-action="closeModal" data-arg="faqModal">
 //   data-arg → único argumento (número, true/false o texto) · data-close-drawer → cierra el menú antes · data-close-modal="id" → cierra ese modal después
 const ACTIONS = {
     switchTab, toggleDrawer, closeModal, openUltraModal, openTutorialModal, openRatingModal, openHistoryModal, openFeedbackModal, openFaqModal, toggleNotifications, closeNotifications, markAllRead, shareApp, installApp, filterGallery, setGalleryLayout, promptClearGallery, executeCategoryClear, playMedia, deleteGalleryItem, toggleCardMenu, setRatio, saveCrop, setRating, submitFeedback, selectPlan, processDownload, pasteClipboard, clearInput, cancelDownload,
     openLink: url => window.open(url, '_blank', 'noopener'),
-    redownload: id => { alert('Iniciando re-descarga...'); if (id !== undefined) toggleCardMenu(id); },
+    redownload: id => {
+        if (id === undefined) { alert('Iniciando re-descarga...'); return; }   // lista de ejemplo del historial
+        const item = galleryItems.find(i => i.id === id);
+        if (document.getElementById('cardMenu-' + id)) toggleCardMenu(id);
+        if (item) saveToDevice(item, true);
+    },
     subscribe: () => alert('Iniciando suscripción elegida...'),
     playFromMenu: id => { playMedia(id); toggleCardMenu(id); }
 };
