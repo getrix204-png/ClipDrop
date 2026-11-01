@@ -16,7 +16,7 @@ import { cleanHeaders, request } from './net.js';
 import { pinterestImage } from './pinterest.js';
 import { detectPlatform, parseTarget } from './platforms.js';
 import { Store, rateLimit } from './runtime.js';
-import { discard, prepare, sweepTemp, ytdlp } from './ytdlp.js';
+import { discard, initCookies, prepare, sweepTemp, ytdlp } from './ytdlp.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -203,6 +203,7 @@ app.use((err, req, res, next) => {
 
 // ── Ciclo de vida ──
 await sweepTemp();   // temporales de ejecuciones anteriores
+if (await initCookies()) console.log('Cookies de yt-dlp cargadas.');
 const server = app.listen(config.port, () => console.log(`ClipDrop API escuchando en :${config.port} · orígenes: ${config.origins.join(', ') || '(ninguno)'}`));
 server.keepAliveTimeout = 65_000;   // mayor que el de los balanceadores habituales (60 s)
 server.headersTimeout = 66_000;

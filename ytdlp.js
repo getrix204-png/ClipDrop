@@ -1,6 +1,6 @@
 // Ejecución de yt-dlp: sin shell, con tiempo límite, colas separadas y limpieza de archivos temporales.
 import { spawn } from 'node:child_process';
-import { mkdir, mkdtemp, readdir, rm } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { config } from './config.js';
 import { HttpError, mapYtDlpError } from './errors.js';
@@ -10,12 +10,24 @@ const extractPool = new Pool(config.maxParallel, config.maxQueue);   // extracci
 const preparePool = new Pool(config.maxPrepare, config.maxQueue);    // fusión / conversión / respaldo (pesadas)
 
 // --use-extractors default,-generic: desactiva el extractor genérico (no descarga páginas arbitrarias desde el servidor).
-const BASE = ['--ignore-config', '--no-warnings', '--use-extractors', 'default,-generic', '--socket-timeout', '15', '--retries', '2',
-  ...(config.cookies ? ['--cookies', config.cookies] : [])];
+const BASE = ['--ignore-config', '--no-warnings', '--use-extractors', 'default,-generic', '--socket-timeout', '15', '--retries', '2'];
+
+// Cookies de TU cuenta (opcional, YTDLP_COOKIES). yt-dlp reescribe el archivo al terminar y en Render los Secret Files son
+// de solo lectura, así que se trabaja con una copia en el directorio temporal.
+let cookiesPath = '';
+export async function initCookies() {
+  if (!config.cookies) return false;
+  try {
+    await mkdir(config.tmpDir, { recursive: true });
+    cookiesPath = join(config.tmpDir, 'cookies.txt');
+    await copyFile(config.cookies, cookiesPath);
+    return true;
+  } catch (e) { cookiesPath = ''; console.warn('⚠ No se pudo leer YTDLP_COOKIES:', e.message); return false; }
+}
 
 export function ytdlp(args, timeoutMs, pool = extractPool) {
   return pool.run(() => new Promise((resolve, reject) => {
-    const p = spawn(config.ytdlp, [...BASE, ...args], { stdio: ['ignore', 'pipe', 'pipe'], detached: true });   // args como array: sin inyección de shell
+    const p = spawn(config.ytdlp, [...BASE, ...(cookiesPath ? ['--cookies', cookiesPath] : []), ...args], { stdio: ['ignore', 'pipe', 'pipe'], detached: true });   // args como array: sin inyección de shell
     let out = '', err = '', done = false;
     const kill = () => { try { process.kill(-p.pid, 'SIGKILL'); } catch { /* ya terminó */ } };   // mata también a ffmpeg
     const finish = (fn, v) => { if (done) return; done = true; clearTimeout(timer); fn(v); };
