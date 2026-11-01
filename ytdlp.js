@@ -38,7 +38,12 @@ export function ytdlp(args, timeoutMs, pool = extractPool) {
     });
     p.stderr.on('data', (d) => { err = (err + d).slice(-8000); });
     p.on('error', (e) => finish(reject, new HttpError(500, 'extractor_unavailable', e.code === 'ENOENT' ? 'yt-dlp no está instalado en el servidor.' : 'No se pudo iniciar el extractor.')));
-    p.on('close', (code) => (code === 0 ? finish(resolve, out) : finish(reject, mapYtDlpError(err))));
+    p.on('close', (code) => {
+      if (code === 0) return finish(resolve, out);
+      // Motivo real del fallo en los logs (sin enlaces), para diagnosticar bloqueos de las plataformas
+      console.warn(JSON.stringify({ yt: err.replace(/https?:\/\/\S+/g, '<url>').split('\n').map((l) => l.trim()).filter(Boolean).slice(-2).join(' | ').slice(0, 300) }));
+      finish(reject, mapYtDlpError(err));
+    });
   }));
 }
 
