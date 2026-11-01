@@ -37,6 +37,9 @@ export async function classify(meta, probe) {
 
 const BLOCKED = () => new HttpError(429, 'platform_blocked', 'Pinterest bloqueó temporalmente la solicitud. Inténtalo de nuevo en unos minutos.');
 
+// pinterestapp:pinner suele traer la URL del perfil: se muestra solo el nombre de usuario
+export const pinner = (meta) => { const v = meta['pinterestapp:pinner'] || ''; const m = /pinterest\.[^/]+\/([^/?#]+)/i.exec(v); return m ? decodeURIComponent(m[1]) : v; };
+
 export async function pinterestImage(url, signal) {
   const res = await request(url, {
     headers: { 'User-Agent': config.userAgent, Accept: 'text/html', 'Accept-Language': 'en-US,en;q=0.8' },
@@ -60,7 +63,7 @@ export async function pinterestImage(url, signal) {
   const gif = pick.kind === 'gif';
   return {
     title: clip(meta['og:title'] || 'Pin de Pinterest', 140),
-    author: clip(meta['pinterestapp:pinner'] || '', 80),
+    author: clip(pinner(meta), 80),
     thumb: meta['og:image'] || '',
     contentKind: gif ? 'gif' : 'image',
     items: [{

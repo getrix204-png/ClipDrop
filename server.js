@@ -14,6 +14,7 @@ import { HttpError } from './errors.js';
 import { buildItems, clip, httpsOnly, onlyWatermarked } from './formats.js';
 import { cleanHeaders, request } from './net.js';
 import { pinterestImage } from './pinterest.js';
+import { instagramImage, xPhotos } from './social.js';
 import { detectPlatform, parseTarget } from './platforms.js';
 import { Store, rateLimit } from './runtime.js';
 import { discard, initCookies, prepare, sweepTemp, ytdlp } from './ytdlp.js';
@@ -96,11 +97,31 @@ async function fromYtDlp(url, platform) {
   };
 }
 
+// Publicaciones solo con fotos (pines de imagen/GIF, tweets e Instagram con foto): yt-dlp solo entiende videos, así que se usa otra vía.
+const PHOTO_FALLBACK = { pinterest: pinterestImage, x: xPhotos, instagram: instagramImage };
+
+// Direct sin peso conocido: se pregunta al CDN (HEAD) para mostrar el tamaño real en vez de «—»
+async function fillSizes(items) {
+  await Promise.allSettled(items.filter((i) => i.kind === 'direct' && !i.size && i.fmt && i.fmt.url).slice(0, 6).map(async (i) => {
+    const r = await request(i.fmt.url, { method: 'HEAD', headers: cleanHeaders(i.fmt.http_headers), timeoutMs: 5000 });
+    r.resume();
+    const n = Number(r.headers['content-length']);
+    if (r.statusCode === 200 && n > 0) i.size = n;
+  }));
+}
+
 async function extract(url, platform) {
-  if (platform !== 'pinterest') return fromYtDlp(url, platform);
-  try { return await fromYtDlp(url, platform); }
-  catch (e) { if (e.code !== 'extractor_failed' && e.code !== 'no_formats') throw e; }   // pin de imagen/GIF: yt-dlp solo entiende los de video
-  return pinterestImage(url);
+  let data;
+  const fallback = PHOTO_FALLBACK[platform];
+  if (!fallback) return fromYtDlp(url, platform);
+  try { data = await fromYtDlp(url, platform); }
+  catch (first) {
+    if (first.code !== 'extractor_failed' && first.code !== 'no_formats') throw first;
+    try { data = await fallback(url); }
+    catch (e) { throw e.code === 'no_media' ? first : e; }   // si tampoco hay fotos, se informa el error original
+  }
+  await fillSizes(data.items);
+  return data;
 }
 
 // Caché de 2 min + deduplicación de peticiones simultáneas a la misma URL (menos carga sobre yt-dlp y las plataformas)
