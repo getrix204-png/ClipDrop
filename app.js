@@ -317,7 +317,11 @@ async function processDownload() {
 //            GET  fileUrl → binario (mismo origen que la API; CORS habilitado; sin compresión para que el progreso sea exacto)
 const API_BASE = '';
 // La URL del backend también puede venir de config.js (se edita sin recompilar)
-const RUNTIME_API = /^https:\/\/[^\s/]+$/i.test(String(window.CLIPDROP_API || '').replace(/\/+$/, '')) ? String(window.CLIPDROP_API) : '';
+// Backend por defecto (tu servicio de Render): la app se conecta aunque config.js falte o no se haya subido.
+// config.js puede cambiar la URL; window.CLIPDROP_API = '' fuerza el modo demo.
+const DEFAULT_API = 'https://clipdrop-api-4pem.onrender.com';
+const CFG_API = 'CLIPDROP_API' in window ? String(window.CLIPDROP_API || '').replace(/\/+$/, '') : DEFAULT_API;
+const RUNTIME_API = /^https:\/\/[^\s/]+$/i.test(CFG_API) ? CFG_API : '';
 const DOWNLOAD_API = ((['localhost', '127.0.0.1'].includes(location.hostname) && new URLSearchParams(location.search).get('api')) || API_BASE || RUNTIME_API).replace(/\/+$/, '');
 const API_ERRORS = { 400: 'El enlace no es válido.', 404: 'El contenido no existe o es privado.', 410: 'El contenido ya no está disponible.', 413: 'El archivo es demasiado grande.', 429: 'Demasiadas solicitudes. Espera un minuto e inténtalo de nuevo.' };
 
