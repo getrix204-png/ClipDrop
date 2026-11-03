@@ -1,28 +1,38 @@
-# ClipDrop PWA
+# ClipDrop API
 
-Descarga y gestión de multimedia (TikTok, Instagram, YouTube, X y Pinterest). Estética Clean Dark, PWA instalable y galería guardada en IndexedDB.
+Backend de extracción y retransmisión para la PWA ClipDrop (Express + yt-dlp + ffmpeg).
 
-## Estructura (todo en la raíz, sin carpetas)
-`index.html` · `app.js` · `sw.js` · `manifest.webmanifest` · 4 íconos `.png` · `input.css` · `tailwind.config.js` · `build.mjs` · `package.json` · `vercel.json` · `mock-api.mjs` (solo pruebas)
+## Estructura (plana, sin carpetas)
+`server.js` rutas, CORS y errores · `config.js` variables de entorno · `platforms.js` plataformas y validación de URL · `formats.js` formatos desde yt-dlp (puro, con pruebas) · `pinterest.js` imágenes y GIF de Pinterest · `ytdlp.js` procesos, colas y temporales · `net.js` red segura (SSRF) · `runtime.js` límites, cola y almacén · `errors.js` · `core.test.mjs` · `Dockerfile` · `.env.example`
 
-## Desplegar en Vercel (página de prueba, sin build)
-1. Sube todos estos archivos a la raíz del repositorio (reemplazando los existentes).
-2. En vercel.com: **Add New → Project**, importa el repositorio y **Deploy**.
-   Ajustes: Framework Preset = **Other** · Root Directory = **vacío** · Install/Build/Output Command **sin override**.
-3. Abre la URL (HTTPS) e instala la app desde Chrome.
+## Contrato
+- `POST /extract` `{ "url": "https://…" }` → `{ ok, platform, contentKind, title, author, thumb, formats: [{ id, type, label, ext, size, fileUrl }] }`
+- `GET fileUrl` → binario con `Content-Length` exacto, sin compresión, `Cache-Control: no-store, no-transform` y CORS solo para `ALLOWED_ORIGINS`.
+- Error: `{ ok:false, error:"private_content", message:"…" }` con estados 400, 403, 404, 410, 413, 422, 429, 502, 503 o 504.
 
-Este despliegue usa Tailwind por CDN y el modo simulado (sin backend).
+## Desplegar (Render, con Docker)
+1. Crea un repositorio de GitHub **aparte** (por ejemplo `clipdrop-api`) y sube estos archivos en la raíz.
+2. En render.com: **New → Web Service**, conecta el repositorio, **Runtime: Docker**.
+3. Variables de entorno: `NODE_ENV=production`, `ALLOWED_ORIGINS=https://tu-pwa.vercel.app`, `TRUST_PROXY=1`.
+4. Despliega y abre `https://TU-SERVICIO.onrender.com/health` (debe responder `{"ok":true,…}`).
 
-## Build de producción (opcional)
+Vercel no sirve para este backend: no puede ejecutar yt-dlp/ffmpeg ni mantener descargas largas. Railway, Fly.io o un VPS con Docker también funcionan.
+
+## Conectar la PWA (Vercel)
+1. En el repositorio de la PWA edita `vercel.json` y añade: `"buildCommand": "npm run build:prod", "outputDirectory": "dist"`.
+2. En Vercel → Settings → Environment Variables: `CLIPDROP_API` = `https://TU-SERVICIO.onrender.com` (sin barra final).
+3. Redeploy. El build inyecta la URL y activa la CSP (`connect-src` solo hacia tu backend).
+4. `ALLOWED_ORIGINS` del backend debe coincidir exactamente con el dominio de la PWA.
+
+## Pruebas locales
 ```
 npm install
-npm run build:prod      # genera dist/ con CSS minificado; con CLIPDROP_API activa la CSP estricta
-npm run preview         # sirve dist/
+npm test                                  # lógica pura
+YTDLP_PATH=/ruta/yt-dlp npm run dev       # servidor en :8787
+curl -s -X POST localhost:8787/extract -H 'Content-Type: application/json' -d '{"url":"https://www.tiktok.com/@u/video/1"}'
 ```
-Para que Vercel lo use: añade a `vercel.json` `"buildCommand": "npm run build:prod"` y `"outputDirectory": "dist"`, y define `CLIPDROP_API` en Settings → Environment Variables.
 
-## Desarrollo local
-```
-npm run dev     # sirve la raíz en :3000
-npm run mock    # API de prueba en :8787  →  http://localhost:3000/?api=http://localhost:8787
-```
+## Operación
+- Actualiza yt-dlp con frecuencia (reconstruye la imagen); las plataformas cambian y a veces bloquean IPs de centros de datos: verás `platform_blocked`.
+- Cada descarga pasa por tu servidor: vigila el ancho de banda. El límite por IP es en memoria; con varias instancias usa Redis.
+- Uso responsable: descargar contenido ajeno puede infringir los términos de las plataformas y los derechos de autor. Limita el servicio a contenido propio o con permiso, mantén `ALLOWED_ORIGINS` acotado y ofrece un contacto para retirar contenido.

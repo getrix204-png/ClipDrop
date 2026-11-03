@@ -12,21 +12,32 @@ writeFileSync(fake, `#!/usr/bin/env node
 const fs = require('node:fs'), a = process.argv.slice(2), url = a[a.length - 1];
 if (url.endsWith('/private')) { console.error('ERROR: [x] Video is private'); process.exit(1); }
 else if (url.endsWith('/slow')) { setTimeout(() => {}, 10000); }
+else if (url.endsWith('/args')) { console.log(JSON.stringify(a)); }
 else if (a.includes('-o')) {
   const out = a[a.indexOf('-o') + 1].replace('%(ext)s', a.includes('-x') ? 'mp3' : 'mp4');
   fs.writeFileSync(out, Buffer.alloc(a.includes('-x') ? 4096 : 8192, 7));
 } else console.log(JSON.stringify({ title: 't' }));
 `);
 chmodSync(fake, 0o755);
+const cookieFile = join(dir, 'secret-cookies.txt');
+writeFileSync(cookieFile, '# Netscape HTTP Cookie File\n');
+process.env.YTDLP_COOKIES = cookieFile;
 process.env.YTDLP_PATH = fake;
 process.env.TMP_DIR = join(dir, 'tmp');
-const { ytdlp, prepare, discard, sweepTemp } = await import('./ytdlp.js');
+const { ytdlp, prepare, discard, sweepTemp, initCookies } = await import('./ytdlp.js');
 const { request, readText } = await import('./net.js');
 
 test('ytdlp devuelve el JSON, traduce errores y respeta el tiempo límite', async () => {
   assert.match(await ytdlp(['-J', '--', 'https://ok.test/json'], 5000), /"title"/);
   await assert.rejects(ytdlp(['-J', '--', 'https://ok.test/private'], 5000), { status: 404, code: 'private_content' });
   await assert.rejects(ytdlp(['-J', '--', 'https://ok.test/slow'], 300), { status: 504, code: 'timeout' });
+});
+
+test('los fallos de yt-dlp se registran sin enlaces', async () => {
+  const lines = [], orig = console.warn;
+  console.warn = (...a) => lines.push(a.join(' '));
+  try { await assert.rejects(ytdlp(['-J', '--', 'https://ok.test/private'], 5000)); } finally { console.warn = orig; }
+  assert.ok(lines.some((l) => l.includes('private') && !l.includes('https://')));
 });
 
 test('prepare genera el archivo (MP3), discard libera el disco y los fallos no dejan restos', async () => {
@@ -39,6 +50,13 @@ test('prepare genera el archivo (MP3), discard libera el disco y los fallos no d
   const bad = { args: [], page: 'https://ok.test/private', index: 0 };
   await assert.rejects(prepare(bad), { code: 'private_content' });
   assert.equal(bad.dir, null);
+});
+
+test('cookies: se usa una copia escribible (Render monta los secretos en solo lectura)', async () => {
+  assert.equal(await initCookies(), true);
+  const args = JSON.parse(await ytdlp(['-J', '--', 'https://ok.test/args'], 5000));
+  const i = args.indexOf('--cookies');
+  assert.ok(i >= 0 && args[i + 1] !== cookieFile && existsSync(args[i + 1]));
 });
 
 test('sweepTemp borra temporales huérfanos', async () => {

@@ -4,7 +4,8 @@ import { buildItems, onlyWatermarked } from './formats.js';
 import { parseTarget, detectPlatform } from './platforms.js';
 import { mapYtDlpError } from './errors.js';
 import { isPrivateIp } from './net.js';
-import { classify, parseMeta } from './pinterest.js';
+import { classify, parseMeta, pinner } from './pinterest.js';
+import { parseFxTweet, parseInstagramEmbed } from './social.js';
 import { Pool, rateLimit } from './runtime.js';
 
 const v = (id, w, h, o = {}) => ({ format_id: id, width: w, height: h, vcodec: 'avc1.64', acodec: 'none', ext: 'mp4', protocol: 'https', tbr: h * 2, url: 'https://cdn.example/' + id, ...o });
@@ -71,6 +72,20 @@ test('Pinterest: metadatos y clasificación GIF / imagen HD / reducida', async (
   assert.equal((await classify(meta, async (u) => (u.endsWith('.jpg') ? ok('image/jpeg', 99) : no))).url, 'https://i.pinimg.com/originals/ab/cd/ef/abcdef.jpg');
   assert.equal((await classify(meta, async () => no)).reduced, true);
   assert.equal(await classify({ 'og:image': 'https://evil.example/a.jpg' }, async () => no), null);
+});
+
+test('X: fotos del tweet en tamaño original; sin fotos → null', () => {
+  const r = parseFxTweet({ tweet: { text: 'hola', author: { name: 'Ana', screen_name: 'ana' }, media: { photos: [{ url: 'https://pbs.twimg.com/media/AAA.jpg' }, { url: 'https://pbs.twimg.com/media/BBB.png?name=large' }] } } });
+  assert.equal(r.photos.length, 2); assert.equal(r.photos[0].url, 'https://pbs.twimg.com/media/AAA.jpg?name=orig'); assert.equal(r.photos[1].url, 'https://pbs.twimg.com/media/BBB.png?name=large'); assert.equal(r.author, 'Ana');
+  assert.equal(parseFxTweet({ tweet: { media: { videos: [{}] } } }), null); assert.equal(parseFxTweet({}), null);
+});
+test('Instagram: foto de la página embed (atributos en cualquier orden)', () => {
+  const html = '<a class="UsernameText" href="/u">ana_ok</a><img alt="Un atardecer &amp; mar" class="EmbeddedMediaImage" src="https://scontent.cdninstagram.com/v/x.jpg?a=1&amp;b=2">';
+  assert.deepEqual(parseInstagramEmbed(html), { url: 'https://scontent.cdninstagram.com/v/x.jpg?a=1&b=2', title: 'Un atardecer & mar', author: 'ana_ok' });
+  assert.equal(parseInstagramEmbed('<html>sin imagen</html>'), null);
+});
+test('Pinterest: autor como nombre de usuario', () => {
+  assert.equal(pinner({ 'pinterestapp:pinner': 'https://www.pinterest.com/gamez_vasquez/' }), 'gamez_vasquez'); assert.equal(pinner({}), '');
 });
 
 test('límite por IP y cola de procesos', async () => {
