@@ -304,7 +304,8 @@ async function processDownload() {
         renderFormats(currentMedia);
     } catch (e) {
         resCard.classList.add('hidden');
-        alert('No se pudo analizar el enlace: ' + e.message);
+        const yt = platform === 'youtube' || platform === 'shorts';   // YouTube suele bloquear a los servidores gratuitos
+        alert('No se pudo analizar el enlace: ' + (yt && /bloque/i.test(e.message) ? 'YouTube está bloqueando al servidor en este momento. Prueba con TikTok, Instagram, X o Pinterest.' : e.message));
     } finally { clearTimeout(slow); }
 }
 
