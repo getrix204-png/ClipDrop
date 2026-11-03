@@ -103,6 +103,7 @@
         summary::-webkit-details-marker{display:none}
         .cd-plat{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .65rem;border-radius:999px;border:1px solid #232D3F;background:#0B0F17;font-size:10px;font-weight:600;color:#9CA3AF;transition:border-color .25s,box-shadow .25s,color .25s}
         .cd-plat.active{color:#fff;border-color:rgba(var(--g-rgb),.85);box-shadow:0 0 16px -4px rgba(var(--g-rgb),.75)}
+        .cd-soon{display:inline-flex;align-items:center;gap:.25rem;padding:.1rem .5rem;border-radius:999px;border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.12);color:#FCD34D;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
         @media (prefers-reduced-motion:reduce){.cd-glow,.cd-card,.cd-orb{transition:none}}
     </style>
 </head>
@@ -162,11 +163,9 @@
                     <span class="px-2 py-0.5 bg-purple-500/20 text-purple-400 text-[9px] font-bold rounded-full">Comunidad</span>
                     <span class="text-[9px] text-gray-500">Hoy</span>
                 </div>
-                <h5 class="text-xs font-bold text-white">¡Servidor de Discord Oficial!</h5>
-                <p class="text-[11px] text-gray-400 leading-tight">Únete al Discord para obtener recursos gratis, clips HD y conectar con otros editores.</p>
-                <button data-action="openLink" data-arg="https://discord.gg" class="mt-1 text-[10px] text-indigo-400 font-bold hover:underline flex items-center gap-1">
-                    Unirme al Discord <i class="fa-solid fa-arrow-right text-[8px]"></i>
-                </button>
+                <h5 class="text-xs font-bold text-white">Servidor de Discord oficial</h5>
+                <p class="text-[11px] text-gray-400 leading-tight">Muy pronto podrás unirte al Discord para obtener recursos gratis, clips HD y conectar con otros editores.</p>
+                <span class="cd-soon mt-1"><i class="fa-regular fa-clock"></i> Próximamente</span>
             </div>
 
             <div class="p-3 bg-brand-dark rounded-2xl border border-brand-border space-y-1.5">
@@ -202,10 +201,11 @@
                     <div class="flex items-center gap-2">
                         <i class="fa-brands fa-discord text-indigo-400 text-lg"></i>
                         <span class="font-bold text-xs text-white">Comunidad de Editores</span>
+                        <span class="cd-soon ml-auto"><i class="fa-regular fa-clock"></i> Próximamente</span>
                     </div>
                     <p class="text-[11px] text-gray-300 leading-tight">Accede a recursos free, clips de tendencia y soporte directo.</p>
-                    <button data-action="openLink" data-arg="https://discord.gg" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-95">
-                        <i class="fa-brands fa-discord"></i> Unirse al Discord
+                    <button disabled aria-disabled="true" class="w-full py-2 bg-indigo-600/30 text-white/50 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-not-allowed">
+                        <i class="fa-brands fa-discord"></i> Disponible muy pronto
                     </button>
                 </div>
 
@@ -246,21 +246,22 @@
                     </button>
 
                     <!-- REDES SOCIALES OFICIALES -->
-                    <div class="px-2 pt-3 py-1 text-[10px] font-bold uppercase text-gray-500 tracking-wider">Redes Sociales Oficiales</div>
+                    <div class="px-2 pt-3 py-1 flex items-center justify-between gap-2 text-[10px] font-bold uppercase text-gray-500 tracking-wider"><span>Redes Sociales Oficiales</span><span class="cd-soon"><i class="fa-regular fa-clock"></i> Próximamente</span></div>
                     <div class="grid grid-cols-2 gap-2 pt-1">
-                        <a href="https://tiktok.com" target="_blank" class="p-2 bg-brand-dark rounded-xl border border-brand-border flex items-center gap-2 hover:border-gray-500 transition-all text-xs font-semibold">
+                        <div class="p-2 bg-brand-dark rounded-xl border border-brand-border flex items-center gap-2 transition-all text-xs font-semibold opacity-60 cursor-default select-none" aria-disabled="true">
                             <i class="fa-brands fa-tiktok text-white"></i> TikTok
-                        </a>
-                        <a href="https://instagram.com" target="_blank" class="p-2 bg-brand-dark rounded-xl border border-brand-border flex items-center gap-2 hover:border-pink-500 transition-all text-xs font-semibold">
+                        </div>
+                        <div class="p-2 bg-brand-dark rounded-xl border border-brand-border flex items-center gap-2 transition-all text-xs font-semibold opacity-60 cursor-default select-none" aria-disabled="true">
                             <i class="fa-brands fa-instagram text-pink-400"></i> Instagram
-                        </a>
-                        <a href="https://youtube.com" target="_blank" class="p-2 bg-brand-dark rounded-xl border border-brand-border flex items-center gap-2 hover:border-red-500 transition-all text-xs font-semibold">
+                        </div>
+                        <div class="p-2 bg-brand-dark rounded-xl border border-brand-border flex items-center gap-2 transition-all text-xs font-semibold opacity-60 cursor-default select-none" aria-disabled="true">
                             <i class="fa-brands fa-youtube text-red-500"></i> YouTube
-                        </a>
-                        <a href="https://x.com" target="_blank" class="p-2 bg-brand-dark rounded-xl border border-brand-border flex items-center gap-2 hover:border-gray-400 transition-all text-xs font-semibold">
+                        </div>
+                        <div class="p-2 bg-brand-dark rounded-xl border border-brand-border flex items-center gap-2 transition-all text-xs font-semibold opacity-60 cursor-default select-none" aria-disabled="true">
                             <i class="fa-brands fa-x-twitter text-white"></i> X (Twitter)
-                        </a>
+                        </div>
                     </div>
+                    <p class="px-2 pt-1 text-[10px] text-gray-500">Muy pronto publicaremos nuestras cuentas oficiales.</p>
                 </nav>
             </div>
 
