@@ -1,16 +1,14 @@
 {
-  "name": "clipdrop-api",
-  "version": "1.0.0",
+  "name": "clipdrop-pwa",
+  "version": "0.2.0",
   "private": true,
-  "type": "module",
-  "main": "server.js",
-  "engines": { "node": ">=20.11" },
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
-    "test": "node --test"
+    "dev": "npx serve .",
+    "mock": "node mock-api.mjs",
+    "build:prod": "node build.mjs",
+    "preview": "npx serve dist"
   },
-  "dependencies": {
-    "express": "5.1.0"
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
   }
 }
