@@ -101,6 +101,84 @@
         .cd-fmt:hover{border-color:rgba(var(--g-rgb),.7);box-shadow:0 0 18px -6px rgba(var(--g-rgb),.6)}
         .cd-fmt:active{transform:scale(.96)}
         summary::-webkit-details-marker{display:none}
+        /* ===== Galería rediseñada ===== */
+        :root{--hdr:60px}
+        .cd-gal-head{top:calc(var(--hdr) + 6px);background:rgba(11,15,23,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid #232D3F;border-radius:1.25rem;padding:.75rem;box-shadow:0 12px 30px -14px rgba(0,0,0,.7)}
+        .cd-tabs{position:relative;display:grid;grid-template-columns:repeat(3,1fr);background:#0B0F17;border:1px solid #232D3F;border-radius:.9rem;padding:3px}
+        .cd-tab-ind{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/3);border-radius:.7rem;background-image:linear-gradient(90deg,var(--cd-a),var(--cd-b));box-shadow:0 6px 18px -6px rgba(34,211,238,.55);transition:transform .32s cubic-bezier(.3,.9,.3,1)}
+        .cd-tab{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.55rem .25rem;font-size:12px;font-weight:700;color:#9CA3AF;transition:color .2s}
+        .cd-tab.active{color:#fff}
+        .cd-tab b{font-size:10px;padding:.05rem .4rem;border-radius:999px;background:rgba(255,255,255,.12)}
+        .cd-search{display:flex;align-items:center;gap:.5rem;background:#0B0F17;border:1px solid #232D3F;border-radius:.9rem;padding:.55rem .8rem;transition:border-color .2s}
+        .cd-search:focus-within{border-color:rgba(34,211,238,.6)}
+        .cd-search input{flex:1;min-width:0;background:transparent;outline:none;font-size:12px;color:#F3F4F6}
+        .cd-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:2.25rem;height:2.25rem;border-radius:.75rem;background:#161C28;border:1px solid #232D3F;color:#E5E7EB;transition:transform .15s,border-color .2s}
+        .cd-icon-btn:active{transform:scale(.92)}
+        .cd-icon-btn.on{background-image:linear-gradient(90deg,var(--cd-a),var(--cd-b));color:#fff;border-color:transparent}
+        .cd-view-grid.cd-video{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
+        .cd-view-grid.cd-photo{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}
+        @media(min-width:640px){.cd-view-grid.cd-video{grid-template-columns:repeat(3,1fr)}.cd-view-grid.cd-photo{grid-template-columns:repeat(4,1fr)}}
+        .cd-view-list{display:flex;flex-direction:column;gap:.6rem}
+        .cd-card{background:linear-gradient(180deg,#171E2B,#121823);border:1px solid #232D3F;border-radius:1.1rem;overflow:hidden;box-shadow:0 8px 24px -14px rgba(0,0,0,.7);transition:transform .2s,border-color .2s,box-shadow .2s;content-visibility:auto;contain-intrinsic-size:auto 260px}
+        .cd-card:active{transform:scale(.985)}
+        @media(hover:hover){.cd-card:hover{transform:translateY(-3px);border-color:rgba(34,211,238,.45);box-shadow:0 14px 30px -14px rgba(34,211,238,.35)}}
+        .cd-thumb{position:relative;aspect-ratio:9/12;background:#0B0F17;overflow:hidden;cursor:pointer}
+        .cd-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .35s}
+        .cd-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+        .cd-play i{width:2.6rem;height:2.6rem;border-radius:50%;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#fff;padding-left:2px}
+        .cd-badge{position:absolute;font-size:10px;font-weight:800;padding:.1rem .45rem;border-radius:.4rem;background:rgba(0,0,0,.62);color:#fff;backdrop-filter:blur(4px)}
+        .cd-badge-q{top:.5rem;left:.5rem;color:#67E8F9}
+        .cd-badge-d{bottom:.5rem;right:.5rem}
+        .cd-title{font-size:12px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+        .cd-meta{font-size:10px;color:#9CA3AF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .cd-more{flex:none;width:1.75rem;height:1.75rem;border-radius:.6rem;color:#9CA3AF;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s}
+        .cd-more:active{background:#232D3F;color:#fff}
+        .cd-tag{font-size:10px;font-weight:600;padding:.1rem .5rem;border-radius:999px;background:rgba(34,211,238,.1);color:#67E8F9;border:1px solid rgba(34,211,238,.22)}
+        .cd-view-list .cd-vcard{display:flex}
+        .cd-view-list .cd-vcard .cd-thumb{width:7.2rem;flex:none;aspect-ratio:auto;min-height:6.5rem}
+        .cd-audio{display:flex;align-items:center;gap:.75rem;padding:.75rem}
+        .cd-note{flex:none;width:3.4rem;height:3.4rem;border-radius:1rem;background-image:linear-gradient(135deg,#06B6D4,#7C3AED);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -8px rgba(124,58,237,.7)}
+        .cd-audio.playing .cd-note{animation:cdPulse 1.2s ease-in-out infinite}
+        .cd-pp{flex:none;width:2.5rem;height:2.5rem;border-radius:50%;background:#1B2331;border:1px solid #2B3647;color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .2s}
+        .cd-pp:active{transform:scale(.9)}
+        .cd-audio .cd-pp .fa-pause,.cd-audio.playing .cd-pp .fa-play{display:none}
+        .cd-audio.playing .cd-pp .fa-pause{display:inline-block}
+        .cd-audio.playing .cd-pp{background-image:linear-gradient(90deg,var(--cd-a),var(--cd-b));border-color:transparent}
+        .cd-wave{display:flex;align-items:center;gap:2px;height:2rem;margin-top:.4rem;cursor:pointer}
+        .cd-wave i{flex:1;min-width:2px;border-radius:2px;background:#2B3647;transition:background .15s}
+        .cd-wave i.on{background:linear-gradient(180deg,#22D3EE,#A855F7)}
+        .cd-photo{position:relative;aspect-ratio:1;border-radius:.9rem;overflow:hidden;background:#0B0F17;cursor:pointer;transition:transform .2s;content-visibility:auto;contain-intrinsic-size:auto 120px}
+        .cd-photo:active{transform:scale(.97)}
+        .cd-photo img{width:100%;height:100%;object-fit:cover}
+        .cd-photo-more{position:absolute;top:.35rem;right:.35rem;width:1.7rem;height:1.7rem;border-radius:.6rem;background:rgba(0,0,0,.5);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+        .cd-skel{background:linear-gradient(90deg,#161C28 25%,#1E2635 37%,#161C28 63%);background-size:400% 100%;animation:cdShimmer 1.4s infinite;border-radius:1.1rem;aspect-ratio:9/13}
+        .cd-empty{display:flex;flex-direction:column;align-items:center;gap:.5rem;text-align:center;padding:3rem 1rem;color:#E5E7EB}
+        .cd-empty .ic{width:4rem;height:4rem;border-radius:1.2rem;background:#161C28;border:1px solid #232D3F;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#67E8F9}
+        .cd-btn{margin-top:.5rem;padding:.6rem 1.2rem;border-radius:.9rem;font-size:12px;font-weight:700;color:#fff;background-image:linear-gradient(90deg,var(--cd-a),var(--cd-b))}
+        .cd-ad{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.7rem .9rem;border-radius:1rem;border:1px dashed rgba(251,191,36,.3);background:rgba(251,191,36,.05);font-size:11px;color:#9CA3AF}
+        @keyframes cdRise{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+        @keyframes cdShimmer{to{background-position:-100% 0}}
+        @keyframes cdPulse{50%{transform:scale(1.06)}}
+        .cd-card-in{animation:cdRise .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(min(var(--i,0),10) * 35ms)}
+        .cd-sheet-back{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s}
+        .cd-sheet-back.open{opacity:1;pointer-events:auto}
+        .cd-sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:32rem;margin:0 auto;background:#121823;border:1px solid #232D3F;border-bottom:0;border-radius:1.5rem 1.5rem 0 0;padding:.5rem 1rem calc(1rem + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.9,.2,1);box-shadow:0 -20px 50px -20px rgba(0,0,0,.8)}
+        .cd-sheet.open{transform:translateY(0)}
+        .cd-sheet-handle{padding:.4rem 0 .6rem;cursor:grab;touch-action:none}
+        .cd-sheet-handle span{display:block;width:2.5rem;height:.28rem;border-radius:999px;background:#2B3647;margin:0 auto}
+        .cd-act{display:flex;align-items:center;gap:.9rem;width:100%;padding:.75rem;border-radius:.9rem;font-size:13px;font-weight:600;text-align:left;transition:background .15s}
+        .cd-act:active{background:#1B2331}
+        .cd-act i{width:2rem;height:2rem;border-radius:.65rem;background:#1B2331;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+        .cd-act.danger{color:#F87171}
+        .cd-lb{position:fixed;inset:0;z-index:55;background:rgba(0,0,0,.94);display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .25s}
+        .cd-lb.open{opacity:1;pointer-events:auto}
+        .cd-lb-top,.cd-lb-bar{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.75rem 1rem}
+        .cd-lb-top{padding-top:calc(.75rem + env(safe-area-inset-top))}
+        .cd-lb-bar{padding-bottom:calc(.75rem + env(safe-area-inset-bottom))}
+        .cd-lb-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
+        .cd-lb-stage img{max-width:100%;max-height:100%;object-fit:contain;user-select:none;will-change:transform}
+        .cd-lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:2.6rem;height:2.6rem;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+        @media(prefers-reduced-motion:reduce){.cd-card-in{animation:none}.cd-sheet,.cd-tab-ind,.cd-lb,.cd-sheet-back{transition:none}.cd-audio.playing .cd-note,.cd-skel{animation:none}}
         .cd-plat{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .65rem;border-radius:999px;border:1px solid #232D3F;background:#0B0F17;font-size:10px;font-weight:600;color:#9CA3AF;transition:border-color .25s,box-shadow .25s,color .25s}
         .cd-plat.active{color:#fff;border-color:rgba(var(--g-rgb),.85);box-shadow:0 0 16px -4px rgba(var(--g-rgb),.75)}
         .cd-soon{display:inline-flex;align-items:center;gap:.25rem;padding:.1rem .5rem;border-radius:999px;border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.12);color:#FCD34D;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
@@ -372,41 +450,35 @@
         </section>
 
         <!-- SECTION 2: GALLERY -->
-        <section id="secGallery" class="hidden space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
-                <div class="flex items-center justify-between sm:justify-start gap-3">
-                    <h2 class="text-lg font-bold flex items-center gap-2">
-                        <i class="fa-solid fa-folder-open text-brand-accent"></i> Mis Archivos Guardados
-                    </h2>
-                    <button data-action="promptClearGallery" class="text-xs text-red-400 hover:text-red-300 font-semibold px-2.5 py-1 rounded-lg hover:bg-red-500/10 transition-all flex items-center gap-1.5 border border-red-500/20">
-                        <i class="fa-solid fa-trash-can"></i> <span id="clearGalleryBtnText">Vaciar Galería Completa</span>
-                    </button>
-                </div>
-                
-                <div class="flex items-center gap-2">
-                    <!-- VIEW SWITCHER (GRID VS LIST) -->
-                    <div class="flex bg-brand-card p-1 rounded-xl border border-brand-border text-xs">
-                        <button data-action="setGalleryLayout" data-arg="grid" id="layoutGridBtn" class="px-2.5 py-1 rounded-lg cd-grad-bg text-white font-bold">
-                            <i class="fa-solid fa-grip"></i>
-                        </button>
-                        <button data-action="setGalleryLayout" data-arg="list" id="layoutListBtn" class="px-2.5 py-1 rounded-lg text-gray-400 hover:text-white font-bold">
-                            <i class="fa-solid fa-list"></i>
-                        </button>
+        <section id="secGallery" class="hidden">
+            <!-- Cabecera flotante y fija: título, vista, pestañas segmentadas y búsqueda -->
+            <div id="galHead" class="cd-gal-head sticky z-20 space-y-3">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <h2 class="text-lg font-extrabold tracking-tight flex items-center gap-2"><i class="fa-solid fa-folder-open text-brand-accent"></i> Mi Galería</h2>
+                        <p id="galSummary" class="text-[11px] text-gray-500 mt-0.5 truncate">Aún no hay archivos guardados</p>
                     </div>
-
-                    <div class="flex gap-1.5 bg-brand-card p-1 rounded-xl border border-brand-border text-xs overflow-x-auto">
-                        <button id="fAll" data-action="filterGallery" data-arg="all" class="px-3 py-1 rounded-lg font-semibold cd-grad-bg text-white">Todos</button>
-                        <button id="fVideo" data-action="filterGallery" data-arg="video" class="px-3 py-1 rounded-lg font-semibold text-gray-400 hover:text-white">Videos</button>
-                        <button id="fAudio" data-action="filterGallery" data-arg="audio" class="px-3 py-1 rounded-lg font-semibold text-gray-400 hover:text-white">Audios</button>
-                        <button id="fPhoto" data-action="filterGallery" data-arg="photo" class="px-3 py-1 rounded-lg font-semibold text-gray-400 hover:text-white">Fotos</button>
+                    <div class="flex items-center gap-2">
+                        <button id="layoutGridBtn" class="cd-icon-btn on" data-action="setGalleryLayout" data-arg="grid" aria-label="Vista cuadrícula"><i class="fa-solid fa-grip text-xs"></i></button>
+                        <button id="layoutListBtn" class="cd-icon-btn text-gray-400" data-action="setGalleryLayout" data-arg="list" aria-label="Vista lista"><i class="fa-solid fa-list text-xs"></i></button>
+                        <button class="cd-icon-btn text-red-400" data-action="promptClearGallery" aria-label="Vaciar esta pestaña"><i class="fa-regular fa-trash-can text-xs"></i></button>
                     </div>
                 </div>
+                <div id="galTabs" class="cd-tabs" role="tablist" aria-label="Tipo de archivo">
+                    <span id="galInd" class="cd-tab-ind"></span>
+                    <button id="galTab-video" class="cd-tab active" role="tab" data-action="filterGallery" data-arg="video"><i class="fa-solid fa-film"></i> Videos <b id="galCount-video">0</b></button>
+                    <button id="galTab-audio" class="cd-tab" role="tab" data-action="filterGallery" data-arg="audio"><i class="fa-solid fa-music"></i> Audios <b id="galCount-audio">0</b></button>
+                    <button id="galTab-photo" class="cd-tab" role="tab" data-action="filterGallery" data-arg="photo"><i class="fa-solid fa-image"></i> Imágenes <b id="galCount-photo">0</b></button>
+                </div>
+                <label class="cd-search">
+                    <i class="fa-solid fa-magnifying-glass text-gray-500 text-xs"></i>
+                    <input id="galSearch" type="search" autocomplete="off" placeholder="Buscar por título, autor o #etiqueta" aria-label="Buscar en la galería">
+                    <button id="galSearchClear" class="hidden text-gray-500" data-action="clearSearch" aria-label="Borrar búsqueda"><i class="fa-solid fa-xmark"></i></button>
+                </label>
             </div>
 
-            <!-- GALLERY CONTAINER -->
-            <div id="galleryContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                <!-- Dynamic cards with ad interspersed -->
-            </div>
+            <div id="galleryContainer" class="pt-3"></div>
+            <div id="galSentinel" class="h-10" aria-hidden="true"></div>
         </section>
 
     </main>
@@ -701,6 +773,30 @@
                 <button data-action="saveCrop" class="w-full py-2.5 cd-grad-bg text-white font-bold text-xs rounded-xl">
                     Guardar Recorte
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom sheet de acciones (galería) -->
+    <div id="sheetBack" class="cd-sheet-back" data-action="closeSheet"></div>
+    <div id="sheet" class="cd-sheet" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Acciones del archivo">
+        <div id="sheetHandle" class="cd-sheet-handle"><span></span></div>
+        <div id="sheetBody"></div>
+    </div>
+
+    <!-- Lightbox de imágenes (galería) -->
+    <div id="lightbox" class="cd-lb" aria-hidden="true">
+        <div class="cd-lb-top"><span id="lbCount" class="text-xs font-bold text-gray-300"></span><button class="cd-icon-btn" data-action="closeLightbox" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button></div>
+        <div id="lbStage" class="cd-lb-stage"><img id="lbImg" alt="" draggable="false"></div>
+        <button class="cd-lb-nav" style="left:.5rem" data-action="lbPrev" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="cd-lb-nav" style="right:.5rem" data-action="lbNext" aria-label="Siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+        <div class="cd-lb-bar">
+            <div id="lbTitle" class="cd-title min-w-0 flex-1"></div>
+            <div class="flex items-center gap-2">
+                <button class="cd-icon-btn" data-action="lbShare" aria-label="Compartir"><i class="fa-solid fa-share-nodes text-xs text-violet-300"></i></button>
+                <button class="cd-icon-btn" data-action="lbEdit" aria-label="Editar"><i class="fa-solid fa-crop-simple text-xs text-emerald-300"></i></button>
+                <button class="cd-icon-btn" data-action="lbDownload" aria-label="Descargar"><i class="fa-solid fa-arrow-down text-xs text-amber-300"></i></button>
+                <button class="cd-icon-btn" data-action="lbMore" aria-label="Más opciones"><i class="fa-solid fa-ellipsis text-xs"></i></button>
             </div>
         </div>
     </div>
